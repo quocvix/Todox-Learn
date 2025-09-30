@@ -2,7 +2,7 @@ import Task from "../models/Task.js";
 
 export const getAllTasks = async (req, res) => {
     try {
-        const task = await Task.find();
+        const task = await Task.find().sort({ createdAt: "desc" });
         res.status(200).json(task);
     } catch (error) {
         console.error("Lỗi khi gọi getAllTasks", error);
@@ -12,7 +12,7 @@ export const getAllTasks = async (req, res) => {
 
 export const createTask = async (req, res) => {
     try {
-        const title = req.body;
+        const { title } = req.body;
         const task = new Task({ title });
 
         const newTask = await task.save();
@@ -21,13 +21,43 @@ export const createTask = async (req, res) => {
         console.error("Lỗi khi gọi createTask", error);
         res.status(500).json({ message: "Lỗi hệ thống" });
     }
-    
 };
 
-export const updateTask = (req, res) => {
-    res.status(200).json({ message: "nhiem vu da duoc update thanh cong" });
+export const updateTask = async (req, res) => {
+    try {
+        const { title, status, completedAt } = req.body;
+        const updatedTask = await Task.findByIdAndUpdate(
+            req.params.id,
+            {
+                title,
+                status,
+                completedAt,
+            },
+            { new: true }
+        );
+
+        if (!updatedTask) {
+            return res.status(404).json({ message: "Nhiệm vụ không tồn tại" });
+        }
+
+        res.status(200).json(updatedTask);
+    } catch (error) {
+        console.error("Lỗi khi gọi updateTask", error);
+        res.status(500).json({ message: "Lỗi hệ thống" });
+    }
 };
 
-export const deleteTask = (req, res) => {
-    res.status(200).json({ message: "nhiem vu da duoc xoa thanh cong" });
+export const deleteTask = async (req, res) => {
+    try {
+        const deleteTask = await Task.findByIdAndDelete(req.params.id);
+
+        if (!deleteTask) {
+            return res.status(404).json({ message: "Nhiệm vụ không tồn tại" });
+        }
+
+        res.status(200).json(deleteTask);
+    } catch (error) {
+        console.error("Lỗi khi gọi updateTask", error);
+        res.status(500).json({ message: "Lỗi hệ thống" });
+    }
 };
