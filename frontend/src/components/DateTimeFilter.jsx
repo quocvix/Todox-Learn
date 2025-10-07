@@ -13,9 +13,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { options } from "@/lib/data";
 
-const DateTimeFilter = ({dateQuery, setDateQuery}) => {
+const DateTimeFilter = ({ dateQuery, setDateQuery }) => {
     const [open, setOpen] = React.useState(false);
-    const [value, setValue] = React.useState("");
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -27,9 +26,9 @@ const DateTimeFilter = ({dateQuery, setDateQuery}) => {
                     aria-expanded={open}
                     // className="w-[200px] justify-between"
                 >
-                    {
-                        dateQuery ? options.find((option) => option.value === dateQuery)?.label : options[0].label
-                    }
+                    {dateQuery
+                        ? options.find((option) => option.value === dateQuery)?.label
+                        : options[0].label}
                     <ChevronsUpDown className="opacity-50" />
                 </Button>
             </PopoverTrigger>
@@ -42,7 +41,7 @@ const DateTimeFilter = ({dateQuery, setDateQuery}) => {
                                     key={option.value}
                                     value={option.value}
                                     onSelect={(currentValue) => {
-                                        setValue(currentValue === value ? "" : currentValue);
+                                        setDateQuery(currentValue);
                                         setOpen(false);
                                     }}
                                 >
@@ -50,7 +49,7 @@ const DateTimeFilter = ({dateQuery, setDateQuery}) => {
                                     <Check
                                         className={cn(
                                             "ml-auto",
-                                            value === option.value ? "opacity-100" : "opacity-0"
+                                            dateQuery === option.value ? "opacity-100" : "opacity-0"
                                         )}
                                     />
                                 </CommandItem>

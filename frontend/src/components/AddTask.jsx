@@ -9,7 +9,6 @@ import api from "@/lib/axios";
 const AddTask = ({ handleNewTaskAdded }) => {
     const [newTaskTitle, setNewTaskTitle] = useState("");
     const addTask = async () => {
-        console.log(newTaskTitle);
         if (newTaskTitle.trim()) {
             try {
                 await api.post("/tasks", { title: newTaskTitle });

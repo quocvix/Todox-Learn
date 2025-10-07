@@ -6,6 +6,7 @@ import StatusAndFilter from "@/components/StatsAndFilter";
 import TaskList from "@/components/TaskList";
 import TaskListPagination from "@/components/TaskListPagination";
 import api from "@/lib/axios";
+import { visibleTaskLimit } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,16 +15,21 @@ const HomePage = () => {
     const [activeTaskCount, setActiveTaskCount] = useState(0);
     const [completeTaskCount, setCompleteTaskCount] = useState(0);
     const [filter, setFilter] = useState("all");
-    const [dateQuery, setDateQuery] = useState('today');
+    const [dateQuery, setDateQuery] = useState("today");
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
         fetchTasks();
-    }, []);
+    }, [dateQuery]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [filter, dateQuery]);
 
     // logic
     const fetchTasks = async (req, res) => {
         try {
-            const res = await api.get("/tasks");
+            const res = await api.get(`/tasks?filter=${dateQuery}`);
             setTaskBuffer(res.data.tasks);
             setActiveTaskCount(res.data.activeCount);
             setCompleteTaskCount(res.data.completeCount);
@@ -31,6 +37,22 @@ const HomePage = () => {
             console.log("Lỗi xảy ra khi truy xuất task", error);
             toast.error("Lỗi xảy ra khi truy xuất task");
         }
+    };
+
+    const handleNext = () => {
+        if (page < totalPages) {
+            setPage((prev) => prev + 1);
+        }
+    };
+
+    const handlePrev = () => {
+        if (page > 1) {
+            setPage((prev) => prev - 1);
+        }
+    };
+
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
     };
 
     // biến
@@ -47,9 +69,18 @@ const HomePage = () => {
 
     const handleTaskChanged = () => {
         fetchTasks();
+    };
+
+    const visibleTasks = filteredTasks.slice(
+        (page - 1) * visibleTaskLimit,
+        page * visibleTaskLimit
+    );
+
+    if (visibleTasks.length === 0) {
+        handlePrev();
     }
 
-    
+    const totalPages = Math.ceil(filteredTasks.length / visibleTaskLimit);
 
     return (
         <div className="min-h-screen w-full relative bg-white">
@@ -76,7 +107,7 @@ const HomePage = () => {
                     <Header />
 
                     {/* Tạo Nhiệm Vụ */}
-                    <AddTask handleNewTaskAdded={handleTaskChanged}/>
+                    <AddTask handleNewTaskAdded={handleTaskChanged} />
 
                     {/* Thống Kê và Bộ Lọc */}
                     <StatusAndFilter
@@ -87,12 +118,22 @@ const HomePage = () => {
                     />
 
                     {/* Danh Sách */}
-                    <TaskList filteredTasks={filteredTasks} filter={filter} handleTaskChanged={handleTaskChanged}/>
+                    <TaskList
+                        filteredTasks={visibleTasks}
+                        filter={filter}
+                        handleTaskChanged={handleTaskChanged}
+                    />
 
                     {/* Phân Trang và Lọc Date */}
                     <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-                        <TaskListPagination />
-                        <DateTimeFilter dateQuery={dateQuery} setDateQuery={setDateQuery}/>
+                        <TaskListPagination
+                            handleNext={handleNext}
+                            handlePrev={handlePrev}
+                            handlePageChange={handlePageChange}
+                            page={page}
+                            totalPages={totalPages}
+                        />
+                        <DateTimeFilter dateQuery={dateQuery} setDateQuery={setDateQuery} />
                     </div>
 
                     {/* Chân Trang */}
